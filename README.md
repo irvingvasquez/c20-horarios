@@ -29,15 +29,36 @@ Abre la URL que muestra Vite (normalmente `http://localhost:5173`).
 3. **Horario** — selecciona una materia, elige los días y agrégala al horario. Repite hasta completar las horas de cada materia. Usa actividades para rellenar lo que falte hasta 8 h por día.
 4. **Datos** — exporta o importa un archivo JSON.
 
-## Publicar en la web (futuro)
+## Publicar en la web
 
-Este mismo proyecto se puede desplegar como sitio estático:
+**Producción:** [https://c20-horarios.vercel.app](https://c20-horarios.vercel.app)
+
+Este proyecto se despliega como sitio estático en Vercel. Los datos siguen viviendo en el navegador de cada usuario (IndexedDB); el JSON de exportación permite respaldarlos o moverlos entre equipos.
+
+### Despliegue automático (GitHub)
+
+1. Conecta el repositorio en el [dashboard de Vercel](https://vercel.com/irvingvasquezs-projects/c20-horarios/settings/git) (Settings → Git → Connect).
+2. Haz push a `main` — Vercel construye y publica automáticamente.
+
+Configuración detectada por Vercel:
+
+| Setting | Valor |
+|---------|-------|
+| Framework | Vite |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Node.js | >= 20 |
+
+No se requieren variables de entorno.
+
+### Build local
 
 ```bash
 npm run build
+npm run preview
 ```
 
-El resultado queda en `dist/`. Servicios como Netlify, Vercel o GitHub Pages pueden hospedarlo. Los datos seguirán viviendo en el navegador de cada usuario; si más adelante quieres sincronización en la nube, se puede agregar un backend sin reescribir la interfaz.
+El resultado queda en `dist/`. Si más adelante quieres sincronización en la nube, se puede agregar un backend sin reescribir la interfaz.
 
 ## Estructura
 
