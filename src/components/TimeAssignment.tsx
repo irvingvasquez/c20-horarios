@@ -6,17 +6,19 @@ import {
   type DayOfWeek,
   type DayWorkSettings,
   type ScheduleEntry,
+  type StudyProgram,
   type Subject,
 } from '../types'
 import { getDefaultWorkDayStart, stackSubjectsFromDayStart } from '../utils/dayLayout'
 import { formatHours } from '../utils/hours'
 import { addHoursToTime } from '../utils/time'
-import { getEntryLabel } from '../utils/timetable'
+import { getEntryLabel, getTimetableRowLabel } from '../utils/timetable'
 
 interface TimeAssignmentProps {
   schedule: ScheduleEntry[]
   subjects: Subject[]
   activities: AcademicActivity[]
+  programs: StudyProgram[]
   daySettings: DayWorkSettings[]
   onUpdateEntry: (id: number, changes: Partial<ScheduleEntry>) => Promise<void>
   onUpdateEntries: (updates: Array<{ id: number; startTime: string }>) => Promise<void>
@@ -28,6 +30,7 @@ export function TimeAssignment({
   schedule,
   subjects,
   activities,
+  programs,
   daySettings,
   onUpdateEntry,
   onUpdateEntries,
@@ -187,7 +190,7 @@ export function TimeAssignment({
 
                         return (
                           <tr key={entry.id}>
-                            <td>{getEntryLabel(entry, subjects, activities)}</td>
+                            <td>{getTimetableRowLabel(entry, subjects, activities, programs)}</td>
                             <td>{formatHours(entry.hours)}</td>
                             <td>
                               <input

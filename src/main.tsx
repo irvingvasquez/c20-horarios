@@ -93,6 +93,8 @@ function App() {
             onAssignSubject={data.addScheduleEntries}
             onAssignActivity={data.addScheduleEntries}
             onClearSchedule={data.clearSchedule}
+            onRemoveSubjectFromDay={data.removeSubjectFromDay}
+            onClearActivities={data.clearAllActivities}
             onUpdateEntry={data.updateScheduleEntry}
             onUpdateEntries={data.updateScheduleEntries}
             onGenerateDay={data.generateDaySchedule}

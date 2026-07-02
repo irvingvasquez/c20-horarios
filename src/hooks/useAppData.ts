@@ -153,6 +153,32 @@ export function useAppData() {
       await db.schedule.delete(id)
       await refresh()
     },
+    async removeSubjectFromDay(subjectId: number, day: DayOfWeek) {
+      await db.transaction('rw', db.schedule, async () => {
+        const entries = await db.schedule
+          .where('day')
+          .equals(day)
+          .filter((entry) => entry.subjectId === subjectId)
+          .toArray()
+
+        await db.schedule.bulkDelete(
+          entries.map((entry) => entry.id).filter((id): id is number => id !== undefined),
+        )
+      })
+      await refresh()
+    },
+    async clearAllActivities() {
+      await db.transaction('rw', db.schedule, async () => {
+        const entries = await db.schedule
+          .filter((entry) => entry.activityId !== undefined)
+          .toArray()
+
+        await db.schedule.bulkDelete(
+          entries.map((entry) => entry.id).filter((id): id is number => id !== undefined),
+        )
+      })
+      await refresh()
+    },
     async clearSchedule() {
       await db.transaction('rw', db.schedule, db.daySettings, async () => {
         await db.schedule.clear()

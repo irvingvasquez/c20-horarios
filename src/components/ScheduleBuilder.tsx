@@ -31,6 +31,8 @@ interface ScheduleBuilderProps {
   schedule: ScheduleEntry[]
   onAssignSubject: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
   onAssignActivity: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
+  onRemoveSubjectFromDay: (subjectId: number, day: DayOfWeek) => Promise<void>
+  onClearActivities: () => Promise<void>
   onClearSchedule: () => Promise<void>
 }
 
@@ -41,17 +43,27 @@ export function ScheduleBuilder({
   schedule,
   onAssignSubject,
   onAssignActivity,
+  onRemoveSubjectFromDay,
+  onClearActivities,
   onClearSchedule,
 }: ScheduleBuilderProps) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | ''>('')
   const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([])
   const [selectedActivityId, setSelectedActivityId] = useState<number | ''>('')
+  const [selectedSubjectBlock, setSelectedSubjectBlock] = useState<{
+    subjectId: number
+    day: DayOfWeek
+  } | null>(null)
   const [activityDay, setActivityDay] = useState<DayOfWeek>('lunes')
   const [activityHours, setActivityHours] = useState(1)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'error' | 'success'>('error')
 
   const weekSummary = useMemo(() => summarizeWeek(schedule), [schedule])
+  const hasActivitiesInSchedule = useMemo(
+    () => schedule.some((entry) => entry.activityId !== undefined),
+    [schedule],
+  )
 
   const selectedSubject = subjects.find((item) => item.id === selectedSubjectId)
 
@@ -64,6 +76,38 @@ export function ScheduleBuilder({
     setSelectedDays((current) =>
       current.includes(day) ? current.filter((item) => item !== day) : [...current, day],
     )
+  }
+
+  function toggleSubjectBlock(subjectId: number, day: DayOfWeek) {
+    setSelectedSubjectBlock((current) =>
+      current?.subjectId === subjectId && current.day === day
+        ? null
+        : { subjectId, day },
+    )
+  }
+
+  function isSubjectBlockSelected(subjectId: number, day: DayOfWeek) {
+    return (
+      selectedSubjectBlock?.subjectId === subjectId && selectedSubjectBlock.day === day
+    )
+  }
+
+  async function handleRemoveSelectedSubject() {
+    if (!selectedSubjectBlock) {
+      setMessage('Selecciona una materia del horario para quitarla.')
+      setMessageType('error')
+      return
+    }
+
+    const { subjectId, day } = selectedSubjectBlock
+    const subject = subjects.find((item) => item.id === subjectId)
+
+    await onRemoveSubjectFromDay(subjectId, day)
+    setSelectedSubjectBlock(null)
+    setMessage(
+      `Se quitó ${subject?.name ?? 'la materia'} de ${DAY_LABELS[day]}.`,
+    )
+    setMessageType('success')
   }
 
   async function handleAssignSubject() {
@@ -111,6 +155,20 @@ export function ScheduleBuilder({
     setMessageType('success')
   }
 
+  async function handleClearActivities() {
+    setMessage('')
+
+    if (!hasActivitiesInSchedule) {
+      setMessage('No hay actividades en el horario.')
+      setMessageType('error')
+      return
+    }
+
+    await onClearActivities()
+    setMessage('Se quitaron todas las actividades del horario. Las materias se mantienen.')
+    setMessageType('success')
+  }
+
   return (
     <section className="panel">
       <header className="panel-header">
@@ -130,9 +188,10 @@ export function ScheduleBuilder({
             Materia
             <select
               value={selectedSubjectId}
-              onChange={(event) =>
+              onChange={(event) => {
                 setSelectedSubjectId(event.target.value ? Number(event.target.value) : '')
-              }
+                setSelectedDays([])
+              }}
             >
               <option value="">Selecciona una materia</option>
               {subjects.map((subject) => (
@@ -218,6 +277,14 @@ export function ScheduleBuilder({
           <button type="button" onClick={() => void handleAssignActivity()}>
             Agregar relleno
           </button>
+          <button
+            type="button"
+            className="secondary"
+            disabled={!hasActivitiesInSchedule}
+            onClick={() => void handleClearActivities()}
+          >
+            Vaciar relleno
+          </button>
         </div>
       </div>
 
@@ -243,15 +310,40 @@ export function ScheduleBuilder({
                 {blocks.length === 0 ? (
                   <li className="empty-block">Sin asignaciones</li>
                 ) : (
-                  blocks.map((block) => (
-                    <li
-                      key={`${block.subjectId ?? 'a'}-${block.activityId ?? 's'}-${block.label}`}
-                      className={block.subjectId ? 'block subject-block' : 'block activity-block'}
-                    >
-                      <span>{block.label}</span>
-                      <strong>{formatHours(block.hours)}</strong>
-                    </li>
-                  ))
+                  blocks.map((block) => {
+                    const isSubject = Boolean(block.subjectId)
+
+                    if (isSubject && block.subjectId) {
+                      const selected = isSubjectBlockSelected(block.subjectId, day)
+
+                      return (
+                        <li key={`${day}-s-${block.subjectId}`}>
+                          <button
+                            type="button"
+                            className={
+                              selected
+                                ? 'block subject-block selectable selected'
+                                : 'block subject-block selectable'
+                            }
+                            onClick={() => toggleSubjectBlock(block.subjectId!, day)}
+                          >
+                            <span>{block.label}</span>
+                            <strong>{formatHours(block.hours)}</strong>
+                          </button>
+                        </li>
+                      )
+                    }
+
+                    return (
+                      <li
+                        key={`${day}-a-${block.activityId ?? block.label}`}
+                        className="block activity-block"
+                      >
+                        <span>{block.label}</span>
+                        <strong>{formatHours(block.hours)}</strong>
+                      </li>
+                    )
+                  })
                 )}
               </ul>
 
@@ -261,6 +353,18 @@ export function ScheduleBuilder({
             </article>
           )
         })}
+      </div>
+
+      <div className="schedule-toolbar">
+        <p className="hint">Haz clic en una materia del horario para seleccionarla y quitarla.</p>
+        <button
+          type="button"
+          className="secondary"
+          disabled={!selectedSubjectBlock}
+          onClick={() => void handleRemoveSelectedSubject()}
+        >
+          Quitar materia seleccionada
+        </button>
       </div>
     </section>
   )

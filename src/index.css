@@ -302,6 +302,25 @@ td {
   gap: 1rem;
 }
 
+.schedule-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.schedule-toolbar .hint {
+  margin: 0;
+}
+
+.schedule-toolbar button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .day-card {
   border: 1px solid #d9e2ec;
   border-radius: 14px;
@@ -343,16 +362,48 @@ td {
   gap: 0.55rem;
 }
 
+.block-list li {
+  margin: 0;
+}
+
 .block {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.65rem 0.75rem;
   border-radius: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.block.selectable {
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.block.selectable.selected {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
 }
 
 .subject-block {
   background: #e0f2fe;
+}
+
+button.block.subject-block {
+  background: #e0f2fe;
+  color: #1f2933;
+  font: inherit;
+}
+
+button.block.subject-block:hover {
+  transform: none;
+  background: #bae6fd;
+}
+
+button.block.subject-block.selected {
+  background: #dbeafe;
 }
 
 .activity-block {

@@ -13,6 +13,8 @@ interface ScheduleWizardProps {
   onAssignSubject: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
   onAssignActivity: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
   onClearSchedule: () => Promise<void>
+  onRemoveSubjectFromDay: (subjectId: number, day: DayOfWeek) => Promise<void>
+  onClearActivities: () => Promise<void>
   onUpdateEntry: (id: number, changes: Partial<ScheduleEntry>) => Promise<void>
   onUpdateEntries: (updates: Array<{ id: number; startTime: string }>) => Promise<void>
   onGenerateDay: (day: DayOfWeek) => Promise<void>
@@ -36,6 +38,8 @@ export function ScheduleWizard({
   onAssignSubject,
   onAssignActivity,
   onClearSchedule,
+  onRemoveSubjectFromDay,
+  onClearActivities,
   onUpdateEntry,
   onUpdateEntries,
   onGenerateDay,
@@ -66,6 +70,8 @@ export function ScheduleWizard({
           schedule={schedule}
           onAssignSubject={onAssignSubject}
           onAssignActivity={onAssignActivity}
+          onRemoveSubjectFromDay={onRemoveSubjectFromDay}
+          onClearActivities={onClearActivities}
           onClearSchedule={onClearSchedule}
         />
       )}
@@ -75,6 +81,7 @@ export function ScheduleWizard({
           schedule={schedule}
           subjects={subjects}
           activities={activities}
+          programs={programs}
           daySettings={daySettings}
           onUpdateEntry={onUpdateEntry}
           onUpdateEntries={onUpdateEntries}
