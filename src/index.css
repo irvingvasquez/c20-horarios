@@ -516,3 +516,26 @@ td {
     grid-template-columns: 1fr;
   }
 }
+
+.app-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #d9e2ec;
+  color: #627d98;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.app-footer p {
+  margin: 0.25rem 0;
+}
+
+.app-footer a {
+  color: #0f766e;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}

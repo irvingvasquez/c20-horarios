@@ -2,6 +2,13 @@
   "name": "c20-horarios",
   "private": true,
   "version": "0.1.0",
+  "description": "Aplicación web para armar la carga horaria académica (C20)",
+  "author": {
+    "name": "Juan Irving Vasquez",
+    "url": "https://jivg.org"
+  },
+  "license": "BSD-3-Clause",
+  "homepage": "https://c20-horarios.vercel.app",
   "type": "module",
   "engines": {
     "node": ">=20"

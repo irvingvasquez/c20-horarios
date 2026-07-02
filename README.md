@@ -70,3 +70,15 @@ src/
   utils/          lógica del horario
   types.ts        modelos de datos
 ```
+
+## Autor
+
+**Juan Irving Vasquez**  
+Centro de Innovación y Desarrollo Tecnológico en Cómputo  
+Instituto Politécnico Nacional  
+
+Sitio web: [jivg.org](https://jivg.org)
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia **BSD 3-Clause**. Consulta el archivo [LICENSE](LICENSE) para más detalles.

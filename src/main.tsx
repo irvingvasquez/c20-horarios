@@ -102,6 +102,19 @@ function App() {
 
         {tab === 'datos' && <ExportPanel onImported={data.refresh} />}
       </main>
+
+      <footer className="app-footer">
+        <p>
+          Desarrollado por{' '}
+          <a href="https://jivg.org" target="_blank" rel="noreferrer">
+            Juan Irving Vasquez
+          </a>
+        </p>
+        <p>
+          Centro de Innovación y Desarrollo Tecnológico en Cómputo · Instituto Politécnico Nacional
+        </p>
+        <p>Licencia BSD 3-Clause</p>
+      </footer>
     </div>
   )
 }
