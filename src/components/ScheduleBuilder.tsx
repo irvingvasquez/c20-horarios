@@ -6,6 +6,7 @@ import {
   type AcademicActivity,
   type DayOfWeek,
   type ScheduleEntry,
+  type StudyProgram,
   type Subject,
 } from '../types'
 import {
@@ -20,11 +21,11 @@ import {
   formatHours,
   getDayBlocks,
   getDayRemainingHours,
-  getSubjectRemainingHours,
   summarizeWeek,
 } from '../utils/schedule'
 
 interface ScheduleBuilderProps {
+  programs: StudyProgram[]
   subjects: Subject[]
   activities: AcademicActivity[]
   schedule: ScheduleEntry[]
@@ -34,6 +35,7 @@ interface ScheduleBuilderProps {
 }
 
 export function ScheduleBuilder({
+  programs,
   subjects,
   activities,
   schedule,
@@ -52,6 +54,11 @@ export function ScheduleBuilder({
   const weekSummary = useMemo(() => summarizeWeek(schedule), [schedule])
 
   const selectedSubject = subjects.find((item) => item.id === selectedSubjectId)
+
+  function getProgramAcronym(programId: number) {
+    const program = programs.find((item) => item.id === programId)
+    return program?.acronym.trim() || 'Sin programa'
+  }
 
   function toggleDay(day: DayOfWeek) {
     setSelectedDays((current) =>
@@ -130,7 +137,7 @@ export function ScheduleBuilder({
               <option value="">Selecciona una materia</option>
               {subjects.map((subject) => (
                 <option key={subject.id} value={subject.id}>
-                  {subject.name} ({formatHours(getSubjectRemainingHours(subject, schedule))} pendientes)
+                  {subject.name} ({getProgramAcronym(subject.programId)})
                 </option>
               ))}
             </select>

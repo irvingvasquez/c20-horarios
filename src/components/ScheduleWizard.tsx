@@ -60,6 +60,7 @@ export function ScheduleWizard({
 
       {step === 1 && (
         <ScheduleBuilder
+          programs={programs}
           subjects={subjects}
           activities={activities}
           schedule={schedule}
