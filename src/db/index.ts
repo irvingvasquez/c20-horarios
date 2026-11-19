@@ -2,10 +2,17 @@ import Dexie, { type EntityTable } from 'dexie'
 import type {
   AcademicActivity,
   DayWorkSettings,
+  FormatoC20,
   ScheduleEntry,
   StudyProgram,
   Subject,
 } from '../types'
+import { FORMATO_SETTINGS_ID, defaultFormato, mergeFormato } from '../utils/formato'
+
+export interface AppSetting {
+  id: string
+  value: FormatoC20
+}
 
 export class C20Database extends Dexie {
   programs!: EntityTable<StudyProgram, 'id'>
@@ -13,6 +20,7 @@ export class C20Database extends Dexie {
   activities!: EntityTable<AcademicActivity, 'id'>
   schedule!: EntityTable<ScheduleEntry, 'id'>
   daySettings!: EntityTable<DayWorkSettings, 'day'>
+  appSettings!: EntityTable<AppSetting, 'id'>
 
   constructor() {
     super('c20-horarios')
@@ -72,27 +80,51 @@ export class C20Database extends Dexie {
       schedule: '++id, day, subjectId, activityId',
       daySettings: 'day',
     })
+    this.version(6).stores({
+      programs: '++id, name, acronym',
+      subjects: '++id, name, programId',
+      activities: '++id, name',
+      schedule: '++id, day, subjectId, activityId',
+      daySettings: 'day',
+      appSettings: 'id',
+    })
   }
 }
 
 export const db = new C20Database()
 
+export async function getStoredFormato(): Promise<FormatoC20> {
+  const row = await db.appSettings.get(FORMATO_SETTINGS_ID)
+  if (!row?.value) {
+    const defaults = defaultFormato()
+    await db.appSettings.put({ id: FORMATO_SETTINGS_ID, value: defaults })
+    return defaults
+  }
+  return mergeFormato(row.value)
+}
+
+export async function saveFormato(formato: FormatoC20): Promise<void> {
+  const merged = mergeFormato(formato)
+  await db.appSettings.put({ id: FORMATO_SETTINGS_ID, value: merged })
+}
+
 export async function loadAllData() {
-  const [programs, subjects, activities, schedule, daySettings] = await Promise.all([
+  const [programs, subjects, activities, schedule, daySettings, formato] = await Promise.all([
     db.programs.orderBy('name').toArray(),
     db.subjects.orderBy('name').toArray(),
     db.activities.orderBy('name').toArray(),
     db.schedule.toArray(),
     db.daySettings.toArray(),
+    getStoredFormato(),
   ])
 
-  return { programs, subjects, activities, schedule, daySettings }
+  return { programs, subjects, activities, schedule, daySettings, formato }
 }
 
 export async function exportData() {
   const data = await loadAllData()
   return {
-    version: 5 as const,
+    version: 6 as const,
     exportedAt: new Date().toISOString(),
     hoursPerDay: 8,
     programs: data.programs,
@@ -100,6 +132,7 @@ export async function exportData() {
     activities: data.activities,
     schedule: data.schedule,
     daySettings: data.daySettings,
+    formato: mergeFormato(data.formato),
   }
 }
 
@@ -109,7 +142,10 @@ export async function importData(payload: {
   activities?: AcademicActivity[]
   schedule?: ScheduleEntry[]
   daySettings?: DayWorkSettings[]
+  formato?: Partial<FormatoC20> | null
 }) {
+  const mergedFormato = mergeFormato(payload.formato)
+
   await db.transaction(
     'rw',
     db.programs,
@@ -194,6 +230,8 @@ export async function importData(payload: {
       }
     },
   )
+
+  await saveFormato(mergedFormato)
 }
 
 export async function countSubjectsByProgram(programId: number): Promise<number> {

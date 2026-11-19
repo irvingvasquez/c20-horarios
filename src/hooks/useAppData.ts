@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { countSubjectsByProgram, db, loadAllData } from '../db'
+import { countSubjectsByProgram, db, loadAllData, saveFormato } from '../db'
 import { getDefaultWorkDayStart, layoutDaySchedule } from '../utils/dayLayout'
+import { mergeFormato } from '../utils/formato'
 import type {
   AcademicActivity,
   DayOfWeek,
   DayWorkSettings,
+  FormatoC20,
   ScheduleEntry,
   StudyProgram,
   Subject,
@@ -16,6 +18,7 @@ export function useAppData() {
   const [activities, setActivities] = useState<AcademicActivity[]>([])
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([])
   const [daySettings, setDaySettings] = useState<DayWorkSettings[]>([])
+  const [formato, setFormato] = useState<FormatoC20 | null>(null)
   const [loading, setLoading] = useState(true)
 
   const refresh = useCallback(async () => {
@@ -25,6 +28,7 @@ export function useAppData() {
     setActivities(data.activities)
     setSchedule(data.schedule)
     setDaySettings(data.daySettings)
+    setFormato(data.formato)
     setLoading(false)
   }, [])
 
@@ -38,8 +42,14 @@ export function useAppData() {
     activities,
     schedule,
     daySettings,
+    formato,
     loading,
     refresh,
+    async updateFormato(next: FormatoC20) {
+      const merged = mergeFormato(next)
+      await saveFormato(merged)
+      setFormato(merged)
+    },
     async addProgram(program: Omit<StudyProgram, 'id'>) {
       await db.programs.add(program)
       await refresh()

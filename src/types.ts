@@ -58,8 +58,48 @@ export interface DayBlock {
   activityId?: number
 }
 
+export type CondicionAdscripcion = 'base' | 'interinato' | 'otro'
+
+export interface FormatoFirma {
+  nombre: string
+  cargo: string
+}
+
+export interface FormatoDocente {
+  apellidoPaterno: string
+  apellidoMaterno: string
+  nombres: string
+  rfc: string
+  gradoMaximo: string
+  egresadoDe: string
+  especialidad: string
+  departamento: string
+  numeroEmpleado: string
+  fechaIngresoIPN: string
+  horasNombramiento: number
+  categoria: string
+  condicionAdscripcion: CondicionAdscripcion
+  condicionOtro: string
+  jornada: { matutino: boolean; vespertino: boolean }
+}
+
+export interface FormatoC20 {
+  escuela: string
+  claveUR: string
+  periodo: string
+  vigencia: string
+  fechaLlenado: string
+  observaciones: string
+  docente: FormatoDocente
+  firmas: {
+    profesor: FormatoFirma
+    subdirector: FormatoFirma
+    director: FormatoFirma
+  }
+}
+
 export interface ExportPayload {
-  version: 5
+  version: 6
   exportedAt: string
   hoursPerDay: number
   programs: StudyProgram[]
@@ -67,4 +107,18 @@ export interface ExportPayload {
   activities: AcademicActivity[]
   schedule: ScheduleEntry[]
   daySettings: DayWorkSettings[]
+  formato: FormatoC20
+}
+
+/** JSON importado (v5 sin formato o v6 con campos parciales). */
+export interface ImportPayload {
+  version?: number
+  exportedAt?: string
+  hoursPerDay?: number
+  programs?: StudyProgram[]
+  subjects?: Subject[]
+  activities?: AcademicActivity[]
+  schedule?: ScheduleEntry[]
+  daySettings?: DayWorkSettings[]
+  formato?: Partial<FormatoC20>
 }

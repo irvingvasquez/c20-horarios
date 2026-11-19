@@ -154,12 +154,19 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid #bcccdc;
   border-radius: 10px;
   padding: 0.7rem 0.8rem;
   background: white;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 5rem;
+  font-family: inherit;
 }
 
 .acronym-badge {
@@ -589,4 +596,76 @@ button.block.subject-block.selected {
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+.formato-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.formato-header h2 {
+  margin: 0;
+}
+
+.formato-export-panel {
+  margin-bottom: 1.25rem;
+}
+
+.formato-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 1rem;
+  min-inline-size: 0;
+}
+
+.formato-fieldset legend {
+  padding: 0 0.25rem;
+  font-weight: 700;
+  color: #334e68;
+  margin-bottom: 0.5rem;
+}
+
+.radio-group,
+.checkbox-row {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.radio-group-label {
+  font-size: 0.92rem;
+  color: #334e68;
+}
+
+.radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.radio-option,
+.checkbox-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: auto;
+  font-size: 0.92rem;
+}
+
+.radio-option input,
+.checkbox-option input {
+  width: auto;
+  margin: 0;
+}
+
+.checkbox-row {
+  grid-template-columns: 1fr;
+}
+
+.formato-warnings {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
 }

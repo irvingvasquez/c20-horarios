@@ -7,6 +7,7 @@ import { ScheduleWizard } from './components/ScheduleWizard'
 import { SubjectManager } from './components/SubjectManager'
 import { useAppData } from './hooks/useAppData'
 import { getSubjectRemainingHours } from './utils/schedule'
+import { defaultFormato } from './utils/formato'
 import './index.css'
 
 type Tab = 'programas' | 'materias' | 'actividades' | 'horario' | 'datos'
@@ -102,7 +103,14 @@ function App() {
           />
         )}
 
-        {tab === 'datos' && <ExportPanel onImported={data.refresh} />}
+        {tab === 'datos' && (
+          <ExportPanel
+            formato={data.formato ?? defaultFormato()}
+            schedule={data.schedule}
+            onUpdateFormato={data.updateFormato}
+            onImported={data.refresh}
+          />
+        )}
       </main>
 
       <footer className="app-footer">
