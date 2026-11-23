@@ -669,3 +669,42 @@ button.block.subject-block.selected {
   display: grid;
   gap: 0.5rem;
 }
+
+.c20-print-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  max-width: 20rem;
+}
+
+.c20-print-hint {
+  margin: 0;
+  text-align: right;
+  font-size: 0.82rem;
+  max-width: 20rem;
+}
+
+.c20-preview-frame {
+  width: 100%;
+  background: #627d98;
+  padding: 0.75rem;
+  border-radius: 14px;
+  overflow: hidden;
+  min-height: 12rem;
+}
+
+.c20-preview-loading {
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  color: #f0f4f8;
+}
+
+.c20-preview-iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 279 / 216;
+  border: 0;
+  background: #888;
+}

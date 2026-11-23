@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import type { AcademicActivity, DayOfWeek, DayWorkSettings, ScheduleEntry, StudyProgram, Subject } from '../types'
+import type {
+  AcademicActivity,
+  DayOfWeek,
+  DayWorkSettings,
+  ScheduleEntry,
+  StudyProgram,
+  Subject,
+} from '../types'
+import { C20FormatView } from './C20FormatView'
 import { ScheduleBuilder } from './ScheduleBuilder'
 import { TimeAssignment } from './TimeAssignment'
 import { TimetableView } from './TimetableView'
@@ -10,6 +18,7 @@ interface ScheduleWizardProps {
   activities: AcademicActivity[]
   schedule: ScheduleEntry[]
   daySettings: DayWorkSettings[]
+  onOpenDatosTab: () => void
   onAssignSubject: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
   onAssignActivity: (entries: Omit<ScheduleEntry, 'id'>[]) => Promise<void>
   onClearSchedule: () => Promise<void>
@@ -25,6 +34,7 @@ const steps = [
   { id: 1, label: 'Paso 1: Carga horaria' },
   { id: 2, label: 'Paso 2: Horas de inicio' },
   { id: 3, label: 'Paso 3: Cuadro horario' },
+  { id: 4, label: 'Paso 4: Formato C-20' },
 ] as const
 
 type StepId = (typeof steps)[number]['id']
@@ -35,6 +45,7 @@ export function ScheduleWizard({
   activities,
   schedule,
   daySettings,
+  onOpenDatosTab,
   onAssignSubject,
   onAssignActivity,
   onClearSchedule,
@@ -99,13 +110,24 @@ export function ScheduleWizard({
         />
       )}
 
+      {step === 4 && (
+        <C20FormatView
+          programs={programs}
+          subjects={subjects}
+          activities={activities}
+          schedule={schedule}
+          daySettings={daySettings}
+          onOpenDatosTab={onOpenDatosTab}
+        />
+      )}
+
       <div className="step-actions">
         {step > 1 && (
           <button type="button" className="secondary" onClick={() => setStep((step - 1) as StepId)}>
             Anterior
           </button>
         )}
-        {step < 3 && (
+        {step < 4 && (
           <button type="button" onClick={() => setStep((step + 1) as StepId)}>
             Siguiente
           </button>

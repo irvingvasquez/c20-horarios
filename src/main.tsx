@@ -5,7 +5,7 @@ import { ExportPanel } from './components/ExportPanel'
 import { ProgramManager } from './components/ProgramManager'
 import { ScheduleWizard } from './components/ScheduleWizard'
 import { SubjectManager } from './components/SubjectManager'
-import { useAppData } from './hooks/useAppData'
+import { AppDataProvider, useAppDataContext } from './context/AppDataContext'
 import { getSubjectRemainingHours } from './utils/schedule'
 import { defaultFormato } from './utils/formato'
 import './index.css'
@@ -22,7 +22,7 @@ const tabs: { id: Tab; label: string }[] = [
 
 function App() {
   const [tab, setTab] = useState<Tab>('materias')
-  const data = useAppData()
+  const data = useAppDataContext()
 
   if (data.loading) {
     return <div className="loading-screen">Cargando horario...</div>
@@ -91,6 +91,7 @@ function App() {
             activities={data.activities}
             schedule={data.schedule}
             daySettings={data.daySettings}
+            onOpenDatosTab={() => setTab('datos')}
             onAssignSubject={data.addScheduleEntries}
             onAssignActivity={data.addScheduleEntries}
             onClearSchedule={data.clearSchedule}
@@ -131,6 +132,8 @@ function App() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AppDataProvider>
+      <App />
+    </AppDataProvider>
   </StrictMode>,
 )

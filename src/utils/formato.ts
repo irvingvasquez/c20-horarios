@@ -50,6 +50,18 @@ function asCondicion(value: unknown): CondicionAdscripcion {
   return 'base'
 }
 
+/** True cuando faltan los campos mínimos del encabezado del C-20. */
+export function isFormatoHeaderIncomplete(formato: FormatoC20): boolean {
+  const d = formato.docente
+  return (
+    !d.apellidoPaterno.trim() ||
+    !d.nombres.trim() ||
+    !d.rfc.trim() ||
+    !formato.periodo.trim() ||
+    !formato.fechaLlenado.trim()
+  )
+}
+
 export function mergeFormato(partial?: Partial<FormatoC20> | null): FormatoC20 {
   const base = defaultFormato()
   if (!partial) return base

@@ -93,14 +93,31 @@ export class C20Database extends Dexie {
 
 export const db = new C20Database()
 
+function formatoFromAppSettingRow(row: AppSetting): Partial<FormatoC20> | null {
+  if (row.value && typeof row.value === 'object') {
+    return row.value
+  }
+
+  const { id: _id, value: _value, ...rest } = row as AppSetting & Partial<FormatoC20>
+  if (
+    typeof rest.escuela === 'string' ||
+    (rest.docente && typeof rest.docente === 'object')
+  ) {
+    return rest
+  }
+
+  return null
+}
+
+/** Lee el formato guardado sin sobrescribir filas existentes en IndexedDB. */
 export async function getStoredFormato(): Promise<FormatoC20> {
   const row = await db.appSettings.get(FORMATO_SETTINGS_ID)
-  if (!row?.value) {
-    const defaults = defaultFormato()
-    await db.appSettings.put({ id: FORMATO_SETTINGS_ID, value: defaults })
-    return defaults
+  if (!row) {
+    return defaultFormato()
   }
-  return mergeFormato(row.value)
+
+  const partial = formatoFromAppSettingRow(row)
+  return partial ? mergeFormato(partial) : defaultFormato()
 }
 
 export async function saveFormato(formato: FormatoC20): Promise<void> {
