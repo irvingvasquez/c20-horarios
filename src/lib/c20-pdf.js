@@ -136,6 +136,15 @@ td, th { padding: 0.6mm 1mm; vertical-align: middle; font-weight: normal; }
   body { background: #888; padding: 10mm; }
   .hoja { background: #fff; padding: 10mm; width: 279mm; height: 216mm; margin: auto;
           box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+  body.pdf-export { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+  body.pdf-export .hoja {
+    width: 259mm !important;
+    height: 196mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
 }
 `;
 
@@ -292,6 +301,7 @@ async function renderToPdfElement(datos, opciones) {
   await loaded;
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   const doc = iframe.contentDocument;
+  doc?.body?.classList.add("pdf-export");
   const sheet = doc?.querySelector(".hoja");
   if (!sheet) {
     iframe.remove();
@@ -300,27 +310,54 @@ async function renderToPdfElement(datos, opciones) {
   return { iframe, sheet };
 }
 
+/** Margen impreso alrededor de la hoja C-20 (mm) para no recortar bordes. */
+const PDF_PAGE_MARGIN_MM = 4;
+
+/** Coloca la captura en una sola hoja carta horizontal (sin paginar). */
+async function saveSinglePagePdfFromElement(element, filename) {
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ]);
+
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: "#ffffff",
+    width: element.offsetWidth,
+    height: element.offsetHeight,
+  });
+
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "letter",
+    compress: true,
+  });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const innerW = pageW - PDF_PAGE_MARGIN_MM * 2;
+  const innerH = pageH - PDF_PAGE_MARGIN_MM * 2;
+  const imgData = canvas.toDataURL("image/jpeg", 0.92);
+
+  let w = innerW;
+  let h = (canvas.height * w) / canvas.width;
+  if (h > innerH) {
+    h = innerH;
+    w = (canvas.width * h) / canvas.height;
+  }
+  const x = PDF_PAGE_MARGIN_MM + (innerW - w) / 2;
+  const y = PDF_PAGE_MARGIN_MM + (innerH - h) / 2;
+  pdf.addImage(imgData, "JPEG", x, y, w, h, undefined, "FAST");
+  pdf.save(filename);
+}
+
 /** Descarga PDF sin encabezados/pies del navegador (fecha, título, URL). */
 export async function downloadC20Pdf(datos, opciones) {
-  const { default: html2pdf } = await import("html2pdf.js");
   const { iframe, sheet } = await renderToPdfElement(datos, opciones);
   try {
-    await html2pdf()
-      .set({
-        margin: [0, 0, 0, 0],
-        filename: buildPdfFilename(datos),
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-        },
-        jsPDF: { unit: "mm", format: "letter", orientation: "landscape" },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-      })
-      .from(sheet)
-      .save();
+    await saveSinglePagePdfFromElement(sheet, buildPdfFilename(datos));
   } finally {
     iframe.remove();
   }
