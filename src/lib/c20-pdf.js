@@ -263,13 +263,76 @@ export function buildC20Html(datos, { filasMinimas = 11 } = {}) {
 </div></body></html>`;
 }
 
-// ------------------------------------------------- imprimir / guardar PDF
+function buildPdfFilename(datos) {
+  const d = datos.formato?.docente ?? {};
+  const parts = [d.apellidoPaterno, d.apellidoMaterno, d.nombres]
+    .map((v) => String(v ?? "").trim())
+    .filter(Boolean);
+  const slug = (parts.length ? parts.join("-") : "formato-c20")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || "formato-c20";
+  const date = (datos.formato?.fechaLlenado || new Date().toISOString().slice(0, 10)).replace(/-/g, "");
+  return `formato-c20-${slug}-${date}.pdf`;
+}
+
+async function renderToPdfElement(datos, opciones) {
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText =
+    "position:fixed;left:-9999px;top:0;width:297mm;height:210mm;border:0;";
+  iframe.setAttribute("title", "Generación PDF Formato C-20");
+  const loaded = new Promise((resolve) => {
+    iframe.onload = resolve;
+  });
+  iframe.srcdoc = buildC20Html(datos, opciones);
+  document.body.appendChild(iframe);
+  await loaded;
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const doc = iframe.contentDocument;
+  const sheet = doc?.querySelector(".hoja");
+  if (!sheet) {
+    iframe.remove();
+    throw new Error("No se encontró el contenido del formato C-20.");
+  }
+  return { iframe, sheet };
+}
+
+/** Descarga PDF sin encabezados/pies del navegador (fecha, título, URL). */
+export async function downloadC20Pdf(datos, opciones) {
+  const { default: html2pdf } = await import("html2pdf.js");
+  const { iframe, sheet } = await renderToPdfElement(datos, opciones);
+  try {
+    await html2pdf()
+      .set({
+        margin: [0, 0, 0, 0],
+        filename: buildPdfFilename(datos),
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+        },
+        jsPDF: { unit: "mm", format: "letter", orientation: "landscape" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+      })
+      .from(sheet)
+      .save();
+  } finally {
+    iframe.remove();
+  }
+}
+
+/** Imprime en papel (el diálogo del navegador puede añadir fecha/título arriba). */
 export function printC20(datos, opciones) {
   const iframe = document.createElement("iframe");
   iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
   iframe.onload = () => {
     iframe.contentWindow.focus();
-    iframe.contentWindow.print();          // el usuario elige "Guardar como PDF"
+    iframe.contentWindow.print();
     setTimeout(() => iframe.remove(), 60_000);
   };
   iframe.srcdoc = buildC20Html(datos, opciones);

@@ -61,6 +61,8 @@ export function C20FormatView({
   const [storedFormato, setStoredFormato] = useState<FormatoC20 | null>(null)
   const [previewHtml, setPreviewHtml] = useState('')
   const [previewError, setPreviewError] = useState('')
+  const [pdfError, setPdfError] = useState('')
+  const [pdfPending, setPdfPending] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
@@ -118,6 +120,21 @@ export function C20FormatView({
   const nombramiento = roundHours(formato.docente.horasNombramiento)
   const hoursMismatch = schedule.length > 0 && nombramiento !== scheduleTotal
 
+  async function handleDownloadPdf() {
+    setPdfError('')
+    setPdfPending(true)
+    try {
+      const { downloadC20Pdf } = await import('../lib/c20-pdf.js')
+      await downloadC20Pdf(exportPayload)
+    } catch (error) {
+      setPdfError(
+        error instanceof Error ? error.message : 'No se pudo generar el archivo PDF.',
+      )
+    } finally {
+      setPdfPending(false)
+    }
+  }
+
   function handlePrint() {
     printC20(exportPayload)
   }
@@ -143,13 +160,12 @@ export function C20FormatView({
           <p>Vista previa del formato oficial listo para imprimir o guardar como PDF.</p>
         </div>
         <div className="c20-print-actions">
-          <button type="button" onClick={handlePrint}>
-            Imprimir / Guardar PDF
+          <button type="button" disabled={pdfPending} onClick={() => void handleDownloadPdf()}>
+            {pdfPending ? 'Generando PDF…' : 'Descargar PDF'}
           </button>
-          <p className="hint c20-print-hint">
-            En el diálogo elige &quot;Guardar como PDF&quot;, tamaño Carta, escala 100 % y desactiva
-            &quot;Encabezados y pies de página&quot;.
-          </p>
+          <button type="button" className="secondary" onClick={handlePrint}>
+            Imprimir
+          </button>
         </div>
       </header>
 
@@ -177,6 +193,7 @@ export function C20FormatView({
       )}
 
       {previewError && <p className="message error">{previewError}</p>}
+      {pdfError && <p className="message error">{pdfError}</p>}
 
       <div className="c20-preview-frame">
         {isPending && !previewHtml && <p className="hint c20-preview-loading">Generando vista previa…</p>}

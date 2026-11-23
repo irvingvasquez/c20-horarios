@@ -43,7 +43,7 @@ export function FormatoC20Form({ formato, schedule, onUpdate }: FormatoC20FormPr
       </header>
 
       <fieldset className="formato-fieldset builder-card">
-        <legend>Institución y periodo</legend>
+        <legend>Institución</legend>
         <div className="form-grid">
           <label>
             Escuela
@@ -59,31 +59,11 @@ export function FormatoC20Form({ formato, schedule, onUpdate }: FormatoC20FormPr
               onChange={(event) => void patchFormato({ claveUR: event.target.value })}
             />
           </label>
-          <label>
-            Periodo
-            <input
-              value={formato.periodo}
-              onChange={(event) => void patchFormato({ periodo: event.target.value })}
-              placeholder="Agosto 2026 - Diciembre 2026"
-            />
-          </label>
-          <label>
-            Vigencia
-            <input
-              value={formato.vigencia}
-              onChange={(event) => void patchFormato({ vigencia: event.target.value })}
-              placeholder="Diciembre 2026"
-            />
-          </label>
-          <label>
-            Fecha de llenado
-            <input
-              type="date"
-              value={formato.fechaLlenado}
-              onChange={(event) => void patchFormato({ fechaLlenado: event.target.value })}
-            />
-          </label>
         </div>
+        <p className="hint formato-period-hint">
+          Periodo, vigencia, fecha de llenado y observaciones se configuran en Horario → Paso 3:
+          Cuadro horario.
+        </p>
       </fieldset>
 
       <fieldset className="formato-fieldset builder-card">
@@ -302,18 +282,6 @@ export function FormatoC20Form({ formato, schedule, onUpdate }: FormatoC20FormPr
             />
           </label>
         </div>
-      </fieldset>
-
-      <fieldset className="formato-fieldset builder-card">
-        <legend>Observaciones</legend>
-        <label>
-          Observaciones
-          <textarea
-            rows={4}
-            value={formato.observaciones}
-            onChange={(event) => void patchFormato({ observaciones: event.target.value })}
-          />
-        </label>
       </fieldset>
 
       {warnings.length > 0 && (

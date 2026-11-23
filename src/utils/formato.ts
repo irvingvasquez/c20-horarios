@@ -10,13 +10,22 @@ export const FORMATO_SETTINGS_ID = 'formato'
 
 export const RFC_PATTERN = /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/
 
+/** Fecha local en formato `YYYY-MM-DD` (para input type="date"). */
+export function isoDateToday(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 export function defaultFormato(): FormatoC20 {
   return {
     escuela: '',
     claveUR: '',
     periodo: '',
     vigencia: '',
-    fechaLlenado: '',
+    fechaLlenado: isoDateToday(),
     observaciones: '',
     docente: {
       apellidoPaterno: '',
@@ -75,7 +84,9 @@ export function mergeFormato(partial?: Partial<FormatoC20> | null): FormatoC20 {
     claveUR: partial.claveUR ?? base.claveUR,
     periodo: partial.periodo ?? base.periodo,
     vigencia: partial.vigencia ?? base.vigencia,
-    fechaLlenado: partial.fechaLlenado ?? base.fechaLlenado,
+    fechaLlenado: partial.fechaLlenado?.trim()
+      ? partial.fechaLlenado
+      : base.fechaLlenado,
     observaciones: partial.observaciones ?? base.observaciones,
     docente: {
       apellidoPaterno: docente.apellidoPaterno ?? base.docente.apellidoPaterno,
